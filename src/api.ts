@@ -4,7 +4,7 @@ const BASE_PATH: string = "https://api.themoviedb.org/3";
 interface IMovie {
   id: number;
   backdrop_path: string;
-  original_title: string;
+  title: string;
   overview: string;
   poster_path: string;
 }

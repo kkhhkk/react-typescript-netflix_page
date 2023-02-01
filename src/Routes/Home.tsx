@@ -1,13 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "react-query";
+import { useMatch, PathMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { getMovies, IGetMovieResult } from "../api";
 import { makeImagePath } from "../utlis";
 
 const Wrapper = styled.div`
   overflow-x: hidden;
-  padding-bottom: 300px;
+  padding-bottom: 250px;
 `;
 
 const Loader = styled.div`
@@ -18,14 +19,14 @@ const Loader = styled.div`
   align-items: center;
 `;
 
-const Banner = styled.div<{ bgPhoto: string }>`
+const Banner = styled.div<{ $bgPhoto: string }>`
   display: flex;
   height: 100vh;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
-    url(${(props) => props.bgPhoto});
+    url(${(props) => props.$bgPhoto});
   background-size: cover;
 `;
 
@@ -42,22 +43,42 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
+  margin: 0 50px 0px 50px;
 `;
 
 const Row = styled(motion.div)`
   display: grid;
-  gap: 10px;
+  gap: 0px;
   grid-template-columns: repeat(6, 1fr);
   width: 100%;
   position: absolute;
 `;
 
-const Box = styled(motion.div)<{ bgPhoto: string }>`
-  background-color: white;
-  background-image: url(${(props) => props.bgPhoto});
-  background-size: cover;
+const Box = styled(motion.div)<{ $bgPhoto: string }>`
+  background-color: transparent;
+  background-image: url(${(props) => props.$bgPhoto});
   background-position: center center;
-  height: 320px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  height: 280px;
+  cursor: pointer;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-origin: center right;
+  }
+`;
+
+const Info = styled(motion.div)`
+  position: absolute;
+  width: 85%;
+  background-color: ${(props) => props.theme.black.darker};
+  right: 16px;
+  bottom: 0;
+  opacity: 0;
+  padding: 10px;
+  text-align: center;
 `;
 
 const rowVariants = {
@@ -72,8 +93,28 @@ const rowVariants = {
   },
 };
 
+const boxVariants = {
+  normal: {
+    scale: 1,
+  },
+  hover: {
+    scale: 1.4,
+    y: -50,
+    transition: { delay: 0.5, type: "tween", duration: 0.3 },
+  },
+};
+
+const infoVariants = {
+  hover: {
+    opacity: 1,
+    transition: { delay: 0.5, type: "tween", duration: 0.3 },
+  },
+};
+
 function Home() {
   const offset = 6;
+  const navigate = useNavigate();
+  const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
   const { data, isLoading } = useQuery<IGetMovieResult>(
     ["movie", "nowPlaying"],
     getMovies
@@ -92,6 +133,9 @@ function Home() {
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
   };
+  const boxClick = (movieId: number) => {
+    navigate(`/movies/${movieId}`);
+  };
   return (
     <Wrapper>
       {isLoading ? (
@@ -100,9 +144,9 @@ function Home() {
         <>
           <Banner
             onClick={increaseIndex}
-            bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
+            $bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
           >
-            <Title>{data?.results[0].original_title}</Title>
+            <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
           <Slider>
@@ -120,13 +164,38 @@ function Home() {
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
                     <Box
+                      layoutId={movie.id + ""}
+                      variants={boxVariants}
+                      whileHover="hover"
+                      initial="normal"
+                      transition={{ type: "tween" }}
                       key={movie.id}
-                      bgPhoto={makeImagePath(movie.poster_path, "w500")}
-                    ></Box>
+                      onClick={() => boxClick(movie.id)}
+                      $bgPhoto={makeImagePath(movie.poster_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>{movie.title}</Info>
+                    </Box>
                   ))}
               </Row>
             </AnimatePresence>
           </Slider>
+          <AnimatePresence>
+            {bigMovieMatch ? (
+              <motion.div
+                layoutId={bigMovieMatch.params.movieId}
+                style={{
+                  position: "absolute",
+                  width: "40vw",
+                  height: "80vh",
+                  top: 50,
+                  left: 0,
+                  right: 0,
+                  margin: "0 auto",
+                  backgroundColor: "red",
+                }}
+              ></motion.div>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>
