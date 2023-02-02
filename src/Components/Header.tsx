@@ -115,6 +115,7 @@ function Header() {
     } else {
       inputAnimation.start({
         scaleX: 1,
+        backgroundColor: "white",
       });
     }
     setSearchOpen((prev) => !prev);
@@ -160,7 +161,10 @@ function Header() {
         <Search>
           <motion.svg
             onClick={openSearch}
-            animate={{ x: searchOpen ? -180 : 0 }}
+            animate={{
+              x: searchOpen ? -180 : 0,
+              color: searchOpen ? "black" : "white",
+            }}
             transition={{ type: "liner" }}
             fill="currentColor"
             viewBox="0 0 20 20"
