@@ -43,12 +43,27 @@ const OverView = styled.p`
 const Slider = styled.div`
   position: relative;
   top: -100px;
-  margin: 0 50px 0px 50px;
+  margin: 0px 40px 00px 40px;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const ArrowButton = styled(motion.div)`
+  position: relative;
+  top: 130px;
+  display: flex;
+  justify-content: center;
+  width: 30px;
+  background-color: transparent;
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 40px;
+  margin: 0 -20px;
+  cursor: pointer;
 `;
 
 const Row = styled(motion.div)`
   display: grid;
-  gap: 0px;
+  /* grid-template-columns: 35px 220px 220px 220px 220px 220px 220px 50px; */
   grid-template-columns: repeat(6, 1fr);
   width: 100%;
   position: absolute;
@@ -97,18 +112,48 @@ const BigMovie = styled(motion.div)`
   left: 0;
   right: 0;
   margin: 0 auto;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+
+const BigMovieImage = styled.div`
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center center;
+`;
+
+const BigMovieTitle = styled.div`
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 25px;
+  position: relative;
+  top: -50px;
+  padding: 20px;
+`;
+
+const BigMovieOverview = styled.p`
+  color: ${(props) => props.theme.white.lighter};
+  position: relative;
+  top: -70px;
+  font-size: 15px;
+  padding: 20px;
 `;
 
 const rowVariants = {
-  hidden: {
-    x: window.outerWidth,
-  },
+  hidden: (direction: boolean) => ({
+    x: direction ? window.outerWidth : -window.outerWidth,
+    opacity: 0.5,
+    scale: 0.8,
+  }),
   visible: {
     x: 0,
+    opacity: 1,
+    scale: 1,
   },
-  exit: {
-    x: -window.outerWidth,
-  },
+  exit: (direction: boolean) => ({
+    x: direction ? -window.outerWidth : window.outerWidth,
+    opacity: 0,
+    scale: 0.8,
+  }),
 };
 
 const boxVariants = {
@@ -138,19 +183,37 @@ function Home() {
     getMovies
   );
   const { scrollY } = useScroll();
+  const [direction, setDirection] = useState(false);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const increaseIndex = () => {
     if (data) {
       if (leaving) return;
       setLeaving(true);
+      setDirection(true);
+
       const moviesLength = data?.results.length - 1;
       const maxIndex = Math.floor(moviesLength / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
+  const decreseIndex = () => {
+    if (data) {
+      if (leaving) return;
+      setLeaving(true);
+      setDirection(false);
+      const moviesLength = data?.results.length - 1;
+      const maxIndex = Math.floor(moviesLength / offset) - 1;
+      if (index === 0) {
+        setIndex(maxIndex);
+      } else {
+        setIndex(index - 1);
+      }
+    }
+  };
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
+    setDirection(false);
   };
   const boxClick = (movieId: number) => {
     navigate(`/movies/${movieId}`);
@@ -158,6 +221,11 @@ function Home() {
   const overlayClick = () => {
     navigate("/");
   };
+  const clickedMovie =
+    bigMovieMatch?.params.movieId &&
+    data?.results.find(
+      (movie) => String(movie.id) === bigMovieMatch.params.movieId
+    );
   return (
     <Wrapper>
       {isLoading ? (
@@ -165,15 +233,19 @@ function Home() {
       ) : (
         <>
           <Banner
-            onClick={increaseIndex}
             $bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
           >
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
           <Slider>
-            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
+            <AnimatePresence
+              initial={false}
+              onExitComplete={toggleLeaving}
+              custom={direction}
+            >
               <Row
+                custom={direction}
                 variants={rowVariants}
                 initial="hidden"
                 animate="visible"
@@ -200,6 +272,8 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
+            <ArrowButton onClick={decreseIndex}>〈</ArrowButton>
+            <ArrowButton onClick={increaseIndex}>〉</ArrowButton>
           </Slider>
           <AnimatePresence>
             {bigMovieMatch ? (
@@ -212,7 +286,23 @@ function Home() {
                 <BigMovie
                   layoutId={bigMovieMatch.params.movieId}
                   style={{ top: scrollY.get() + 80 }}
-                ></BigMovie>
+                >
+                  {clickedMovie && (
+                    <>
+                      <BigMovieImage
+                        style={{
+                          backgroundImage: `linear-gradient(to top,black,transparent), url(
+                            ${makeImagePath(clickedMovie.backdrop_path, "w500")}
+                          )`,
+                        }}
+                      ></BigMovieImage>
+                      <BigMovieTitle>{clickedMovie.title}</BigMovieTitle>
+                      <BigMovieOverview>
+                        {clickedMovie.overview}
+                      </BigMovieOverview>
+                    </>
+                  )}
+                </BigMovie>
               </>
             ) : null}
           </AnimatePresence>
