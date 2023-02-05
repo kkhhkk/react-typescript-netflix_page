@@ -1,6 +1,12 @@
 import { motion, useAnimation, useScroll } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Link, useMatch } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import {
+  Link,
+  NavigateFunction,
+  useMatch,
+  useNavigate,
+} from "react-router-dom";
 import styled from "styled-components";
 
 const Nav = styled(motion.nav)`
@@ -45,7 +51,7 @@ const Item = styled.li`
   }
 `;
 
-const Search = styled(motion.span)`
+const Search = styled(motion.form)`
   color: white;
   display: flex;
   justify-content: center;
@@ -74,9 +80,9 @@ const Input = styled(motion.input)`
   left: -180px;
   width: 210px;
   height: 25px;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: ${(props) => props.theme.white.lighter};
-  border-color: ${(props) => props.theme.white.darker};
+  background-color: transparent;
+  color: ${(props) => props.theme.black.lighter};
+  border: 1px solid ${(props) => props.theme.white.lighter};
   border-width: 0.1px;
   border-radius: 5px;
   padding-left: 30px;
@@ -101,6 +107,10 @@ const navVariants = {
   },
 };
 
+interface IForm {
+  keyword: string;
+}
+
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
@@ -108,14 +118,14 @@ function Header() {
   const { scrollY } = useScroll();
   const inputAnimation = useAnimation();
   const navAnimation = useAnimation();
-
+  const navigate: NavigateFunction = useNavigate();
   const openSearch = () => {
     if (searchOpen) {
       inputAnimation.start({ scaleX: 0 });
     } else {
       inputAnimation.start({
         scaleX: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255,255,255,1)",
       });
     }
     setSearchOpen((prev) => !prev);
@@ -129,6 +139,11 @@ function Header() {
       }
     });
   }, [scrollY, navAnimation]);
+  const { register, handleSubmit, setValue } = useForm<IForm>();
+  const onValid = (data: IForm) => {
+    navigate(`/search?keyword=${data.keyword}`);
+    setValue("keyword", "");
+  };
   return (
     <Nav variants={navVariants} animate={navAnimation} initial={"top"}>
       <Col>
@@ -158,7 +173,7 @@ function Header() {
         </Items>
       </Col>
       <Col>
-        <Search>
+        <Search onSubmit={handleSubmit(onValid)}>
           <motion.svg
             onClick={openSearch}
             animate={{
@@ -177,10 +192,11 @@ function Header() {
             ></path>
           </motion.svg>
           <Input
-            placeholder="Search for Tv Show & Movies"
+            {...register("keyword", { required: true, minLength: 2 })}
             animate={inputAnimation}
             initial={{ scaleX: 0 }}
-            transition={{ type: "liner" }}
+            transition={{ type: "linear" }}
+            placeholder="Search for movie or tv show..."
           />
         </Search>
       </Col>

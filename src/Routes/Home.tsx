@@ -3,7 +3,12 @@ import { useState } from "react";
 import { useQuery } from "react-query";
 import { useMatch, PathMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getMovies, IGetMovieResult } from "../api";
+import {
+  getMovies,
+  getMoviesTopRates,
+  IGetMovieResult,
+  IGetMovieTopRate,
+} from "../api";
 import { makeImagePath } from "../utlis";
 
 const Wrapper = styled.div`
@@ -48,16 +53,17 @@ const Slider = styled.div`
   justify-content: space-between;
 `;
 
-const ArrowButton = styled(motion.div)`
+const ArrowButton = styled(motion.button)`
   position: relative;
-  top: 130px;
+  top: 120px;
   display: flex;
   justify-content: center;
   width: 30px;
   background-color: transparent;
   color: ${(props) => props.theme.white.lighter};
-  font-size: 40px;
+  font-size: 50px;
   margin: 0 -20px;
+  border: 0;
   cursor: pointer;
 `;
 
@@ -182,6 +188,7 @@ function Home() {
     ["movie", "nowPlaying"],
     getMovies
   );
+
   const { scrollY } = useScroll();
   const [direction, setDirection] = useState(false);
   const [index, setIndex] = useState(0);
@@ -272,8 +279,12 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
-            <ArrowButton onClick={decreseIndex}>〈</ArrowButton>
-            <ArrowButton onClick={increaseIndex}>〉</ArrowButton>
+            <ArrowButton type="button" onClick={decreseIndex}>
+              〈
+            </ArrowButton>
+            <ArrowButton type="button" onClick={increaseIndex}>
+              〉
+            </ArrowButton>
           </Slider>
           <AnimatePresence>
             {bigMovieMatch ? (

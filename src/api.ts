@@ -9,6 +9,18 @@ interface IMovie {
   poster_path: string;
 }
 
+interface IMovieTopRate {
+  backdrop_path: string;
+  id: number;
+  overview: string;
+  poster_path: string;
+  title: string;
+  vote_average: number;
+}
+export interface IGetMovieTopRate {
+  results: IMovieTopRate[];
+}
+
 export interface IGetMovieResult {
   dates: {
     maximum: string;
@@ -19,7 +31,14 @@ export interface IGetMovieResult {
 
 export async function getMovies() {
   const response = await fetch(
-    `${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`
+    `${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=ko-KR`
+  );
+  return await response.json();
+}
+
+export async function getMoviesTopRates() {
+  const response = await fetch(
+    `${BASE_PATH}movie/top_rated?api_key=${API_KEY}&language=ko-KR`
   );
   return await response.json();
 }
