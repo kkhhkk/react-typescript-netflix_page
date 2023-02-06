@@ -19,6 +19,7 @@ const Nav = styled(motion.nav)`
   top: 0;
   color: white;
   padding: 20px 60px;
+  z-index: 99;
 `;
 const Col = styled.div`
   display: flex;
@@ -162,12 +163,14 @@ function Header() {
         </Link>
         <Items>
           <Item>
-            <Link to="/">Home {homeMatch && <Circle layoutId="circle" />}</Link>
+            <Link to="/">
+              Movie {homeMatch && <Circle layoutId="circle" />}
+            </Link>
           </Item>
 
           <Item>
             <Link to="tv">
-              Tv Show {tvMatch && <Circle layoutId="circle" />}
+              TV Show {tvMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
         </Items>
@@ -196,7 +199,7 @@ function Header() {
             animate={inputAnimation}
             initial={{ scaleX: 0 }}
             transition={{ type: "linear" }}
-            placeholder="Search for movie or tv show..."
+            placeholder="Search for movie or TV show..."
           />
         </Search>
       </Col>

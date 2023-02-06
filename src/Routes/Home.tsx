@@ -5,15 +5,14 @@ import { useMatch, PathMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   getMovies,
+  getMoviesPopular,
   getMoviesTopRates,
   IGetMovieResult,
-  IGetMovieTopRate,
 } from "../api";
 import { makeImagePath } from "../utlis";
 
 const Wrapper = styled.div`
   overflow-x: hidden;
-  padding-bottom: 250px;
 `;
 
 const Loader = styled.div`
@@ -45,12 +44,30 @@ const OverView = styled.p`
   width: 50%;
 `;
 
+const Category = styled.div`
+  position: relative;
+  top: -110px;
+  font-size: 25px;
+  left: 60px;
+  font-weight: 600;
+`;
+
 const Slider = styled.div`
   position: relative;
-  top: -100px;
-  margin: 0px 40px 00px 40px;
+  top: -450px;
+  margin: 0px 40px 0px 40px;
   display: flex;
   justify-content: space-between;
+  margin-top: 350px;
+`;
+
+const LastSlider = styled.div`
+  position: relative;
+  top: -450px;
+  margin: 0px 40px -63px 40px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 350px;
 `;
 
 const ArrowButton = styled(motion.button)`
@@ -100,6 +117,7 @@ const Info = styled(motion.div)`
   opacity: 0;
   padding: 10px;
   text-align: center;
+  font-size: 13px;
 `;
 
 const Overlay = styled(motion.div)`
@@ -119,29 +137,51 @@ const BigMovie = styled(motion.div)`
   right: 0;
   margin: 0 auto;
   background-color: ${(props) => props.theme.black.lighter};
+  z-index: 2;
 `;
 
 const BigMovieImage = styled.div`
   width: 100%;
-  height: 400px;
+  height: 300px;
   background-size: cover;
   background-position: center center;
 `;
 
+const BigMoviePoster = styled.div`
+  position: relative;
+  background-size: cover;
+  background-position: center center;
+  top: -100px;
+  left: 40px;
+  width: 30%;
+  height: 280px;
+`;
+
 const BigMovieTitle = styled.div`
   color: ${(props) => props.theme.white.lighter};
-  font-size: 25px;
+  font-size: 22px;
+  width: 60%;
   position: relative;
-  top: -50px;
+  top: -370px;
+  left: 220px;
   padding: 20px;
 `;
 
 const BigMovieOverview = styled.p`
   color: ${(props) => props.theme.white.lighter};
   position: relative;
-  top: -70px;
+  top: -360px;
+  left: 220px;
+  width: 60%;
   font-size: 15px;
   padding: 20px;
+`;
+
+const Ratings = styled.div`
+  position: absolute;
+  top: 85%;
+  left: 15%;
+  font-size: 20px;
 `;
 
 const rowVariants = {
@@ -184,32 +224,74 @@ function Home() {
   const offset = 6;
   const navigate = useNavigate();
   const bigMovieMatch: PathMatch<string> | null = useMatch("/movies/:movieId");
-  const { data, isLoading } = useQuery<IGetMovieResult>(
+  const topBigMovieMatch: PathMatch<string> | null = useMatch(
+    "/movies/top_rate/:movieId"
+  );
+  const popularBigMovieMatch: PathMatch<string> | null = useMatch(
+    "/movies/popular/:movieId"
+  );
+  const { data: nowPlaying, isLoading } = useQuery<IGetMovieResult>(
     ["movie", "nowPlaying"],
     getMovies
   );
-
+  const { data: topRate } = useQuery<IGetMovieResult>(
+    ["movie", "topRate"],
+    getMoviesTopRates,
+    {
+      enabled: !!nowPlaying,
+    }
+  );
+  const { data: popular } = useQuery<IGetMovieResult>(
+    ["movie", "popular"],
+    getMoviesPopular,
+    { enabled: !!topRate }
+  );
   const { scrollY } = useScroll();
   const [direction, setDirection] = useState(false);
   const [index, setIndex] = useState(0);
+  const [topIndex, setTopIndex] = useState(0);
+  const [popularIndex, setPopularIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
+  const [topDirection, setTopDirection] = useState(false);
+  const [popularDirection, setPopularDirection] = useState(false);
   const increaseIndex = () => {
-    if (data) {
+    if (nowPlaying) {
       if (leaving) return;
       setLeaving(true);
       setDirection(true);
-
-      const moviesLength = data?.results.length - 1;
+      const moviesLength = nowPlaying?.results.length - 1;
       const maxIndex = Math.floor(moviesLength / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
+  const topIncreaseIndex = () => {
+    if (topRate) {
+      if (leaving) return;
+      setLeaving(true);
+      setTopDirection(true);
+      const topRateLength = topRate?.results.length - 1;
+      const topRateMaxIndex = Math.floor(topRateLength / offset) - 1;
+      setTopIndex((prev) => (prev === topRateMaxIndex ? 0 : prev + 1));
+    }
+  };
+
+  const popularIncreaseIndex = () => {
+    if (popular) {
+      if (leaving) return;
+      setLeaving(true);
+      setPopularDirection(true);
+      const popularLength = popular?.results.length - 1;
+      const popularMaxIndex = Math.floor(popularLength / offset) - 1;
+      setPopularIndex((prev) => (prev === popularMaxIndex ? 0 : prev + 1));
+    }
+  };
+
   const decreseIndex = () => {
-    if (data) {
+    if (nowPlaying) {
       if (leaving) return;
       setLeaving(true);
       setDirection(false);
-      const moviesLength = data?.results.length - 1;
+      const moviesLength = nowPlaying?.results.length - 1;
       const maxIndex = Math.floor(moviesLength / offset) - 1;
       if (index === 0) {
         setIndex(maxIndex);
@@ -218,20 +300,74 @@ function Home() {
       }
     }
   };
+  const topDecreaseIndex = () => {
+    if (topRate) {
+      if (leaving) return;
+      setLeaving(true);
+      setTopDirection(false);
+      const topRateiLength = topRate?.results.length - 1;
+      const topRateMaxIndex = Math.floor(topRateiLength / offset) - 1;
+      if (topIndex === 0) {
+        setTopIndex(topRateMaxIndex);
+      } else {
+        setTopIndex(topIndex - 1);
+      }
+    }
+  };
+
+  const popularDecreaseIndex = () => {
+    if (popular) {
+      if (leaving) return;
+      setLeaving(true);
+      setTopDirection(false);
+      const populariLength = popular?.results.length - 1;
+      const popularMaxIndex = Math.floor(populariLength / offset) - 1;
+      if (popularIndex === 0) {
+        setPopularIndex(popularMaxIndex);
+      } else {
+        setPopularIndex(popularIndex - 1);
+      }
+    }
+  };
+
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
     setDirection(false);
+    setTopDirection(false);
+    setPopularDirection(false);
   };
+
   const boxClick = (movieId: number) => {
     navigate(`/movies/${movieId}`);
   };
+
+  const topBoxClick = (movieId: number) => {
+    navigate(`/movies/top_rate/${movieId}`);
+  };
+
+  const popularBoxclick = (movieId: number) => {
+    navigate(`/movies/popular/${movieId}`);
+  };
+
   const overlayClick = () => {
     navigate("/");
   };
+
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
-    data?.results.find(
+    nowPlaying?.results.find(
       (movie) => String(movie.id) === bigMovieMatch.params.movieId
+    );
+
+  const topClickedMovie =
+    topBigMovieMatch?.params.movieId &&
+    topRate?.results.find(
+      (movie) => String(movie.id) === topBigMovieMatch.params.movieId
+    );
+  const popularClickedMovie =
+    popularBigMovieMatch?.params.movieId &&
+    popular?.results.find(
+      (movie) => String(movie.id) === popularBigMovieMatch.params.movieId
     );
   return (
     <Wrapper>
@@ -240,11 +376,12 @@ function Home() {
       ) : (
         <>
           <Banner
-            $bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
+            $bgPhoto={makeImagePath(nowPlaying?.results[0].backdrop_path || "")}
           >
-            <Title>{data?.results[0].title}</Title>
-            <OverView>{data?.results[0].overview}</OverView>
+            <Title>{nowPlaying?.results[0].title}</Title>
+            <OverView>{nowPlaying?.results[0].overview}</OverView>
           </Banner>
+          <Category>현재 상영 중</Category>
           <Slider>
             <AnimatePresence
               initial={false}
@@ -260,7 +397,7 @@ function Home() {
                 transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
-                {data?.results
+                {nowPlaying?.results
                   .slice(1)
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
@@ -307,9 +444,172 @@ function Home() {
                           )`,
                         }}
                       ></BigMovieImage>
-                      <BigMovieTitle>{clickedMovie.title}</BigMovieTitle>
+                      <BigMoviePoster
+                        style={{
+                          backgroundImage: `url(${makeImagePath(
+                            clickedMovie.poster_path,
+                            "w500"
+                          )}
+                          )`,
+                        }}
+                      ></BigMoviePoster>
+                      <BigMovieTitle>
+                        <div>{clickedMovie.title}</div>(
+                        {clickedMovie.original_title})
+                      </BigMovieTitle>
                       <BigMovieOverview>
                         {clickedMovie.overview}
+                      </BigMovieOverview>
+                      <Ratings>{clickedMovie.vote_average}</Ratings>
+                    </>
+                  )}
+                </BigMovie>
+              </>
+            ) : null}
+          </AnimatePresence>
+          <Category>평점 순</Category>
+          <Slider>
+            <AnimatePresence
+              initial={false}
+              onExitComplete={toggleLeaving}
+              custom={topDirection}
+            >
+              <Row
+                custom={topDirection}
+                variants={rowVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ type: "tween", duration: 1 }}
+                key={topIndex}
+              >
+                {topRate?.results
+                  .slice(offset * topIndex, offset * topIndex + offset)
+                  .map((movie) => (
+                    <Box
+                      layoutId={"rate" + movie.id + ""}
+                      variants={boxVariants}
+                      whileHover="hover"
+                      initial="normal"
+                      transition={{ type: "tween" }}
+                      key={movie.id}
+                      onClick={() => topBoxClick(movie.id)}
+                      $bgPhoto={makeImagePath(movie.poster_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>{movie.title}</Info>
+                    </Box>
+                  ))}
+              </Row>
+            </AnimatePresence>
+            <ArrowButton type="button" onClick={topDecreaseIndex}>
+              〈
+            </ArrowButton>
+            <ArrowButton type="button" onClick={topIncreaseIndex}>
+              〉
+            </ArrowButton>
+          </Slider>
+          <AnimatePresence>
+            {topBigMovieMatch ? (
+              <>
+                <Overlay
+                  onClick={overlayClick}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+                <BigMovie
+                  layoutId={"rate" + topBigMovieMatch.params.movieId}
+                  style={{ top: scrollY.get() + 80 }}
+                >
+                  {topClickedMovie && (
+                    <>
+                      <BigMovieImage
+                        style={{
+                          backgroundImage: `linear-gradient(to top,black,transparent), url(
+                            ${makeImagePath(
+                              topClickedMovie.backdrop_path,
+                              "w500"
+                            )}
+                          )`,
+                        }}
+                      ></BigMovieImage>
+                      <BigMovieTitle>{topClickedMovie.title}</BigMovieTitle>
+                      <BigMovieOverview>
+                        {topClickedMovie.overview}
+                      </BigMovieOverview>
+                    </>
+                  )}
+                </BigMovie>
+              </>
+            ) : null}
+          </AnimatePresence>
+          <Category>인기 순</Category>
+          <LastSlider>
+            <AnimatePresence
+              initial={false}
+              onExitComplete={toggleLeaving}
+              custom={popularDirection}
+            >
+              <Row
+                custom={popularDirection}
+                variants={rowVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ type: "tween", duration: 1 }}
+                key={popularIndex}
+              >
+                {popular?.results
+                  .slice(offset * popularIndex, offset * popularIndex + offset)
+                  .map((movie) => (
+                    <Box
+                      layoutId={"popular" + movie.id + ""}
+                      variants={boxVariants}
+                      whileHover="hover"
+                      initial="normal"
+                      transition={{ type: "tween" }}
+                      key={movie.id}
+                      onClick={() => popularBoxclick(movie.id)}
+                      $bgPhoto={makeImagePath(movie.poster_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>{movie.title}</Info>
+                    </Box>
+                  ))}
+              </Row>
+            </AnimatePresence>
+            <ArrowButton type="button" onClick={popularDecreaseIndex}>
+              〈
+            </ArrowButton>
+            <ArrowButton type="button" onClick={popularIncreaseIndex}>
+              〉
+            </ArrowButton>
+          </LastSlider>
+          <AnimatePresence>
+            {popularBigMovieMatch ? (
+              <>
+                <Overlay
+                  onClick={overlayClick}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+                <BigMovie
+                  layoutId={"popular" + popularBigMovieMatch.params.movieId}
+                  style={{ top: scrollY.get() + 80 }}
+                >
+                  {popularClickedMovie && (
+                    <>
+                      <BigMovieImage
+                        style={{
+                          backgroundImage: `linear-gradient(to top,black,transparent), url(
+                            ${makeImagePath(
+                              popularClickedMovie.backdrop_path,
+                              "w500"
+                            )}
+                          )`,
+                        }}
+                      ></BigMovieImage>
+                      <BigMovieTitle>{popularClickedMovie.title}</BigMovieTitle>
+                      <BigMovieOverview>
+                        {popularClickedMovie.overview}
                       </BigMovieOverview>
                     </>
                   )}
