@@ -3,3 +3,7 @@ export function makeImagePath(backPath: string, format?: string) {
     format ? format : "original"
   }/${backPath}`;
 }
+
+export function ratingToPercent(score: number) {
+  return score * 10;
+}

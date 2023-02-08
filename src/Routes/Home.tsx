@@ -9,7 +9,7 @@ import {
   getMoviesTopRates,
   IGetMovieResult,
 } from "../api";
-import { makeImagePath } from "../utlis";
+import { makeImagePath, ratingToPercent } from "../utlis";
 
 const Wrapper = styled.div`
   overflow-x: hidden;
@@ -169,6 +169,10 @@ const BigMovieTitle = styled.div`
 
 const BigMovieOverview = styled.p`
   color: ${(props) => props.theme.white.lighter};
+  display: -webkit-inline-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
   position: relative;
   top: -360px;
   left: 220px;
@@ -179,18 +183,50 @@ const BigMovieOverview = styled.p`
 
 const Ratings = styled.div`
   position: absolute;
-  top: 65%;
-  left: 0%;
+  top: 85%;
+  left: 7%;
   font-size: 20px;
 `;
 
+const Rate = styled.span`
+  font-weight: 500;
+`;
+
 const StarRateWrap = styled.div`
-  width: 100%;
-  margin: 100px 0 0 15px;
-  .star_icon {
-    display: inline-flex;
-    margin-right: 5px;
-  }
+  position: relative;
+  color: white;
+  position: relative;
+  unicode-bidi: bidi-override;
+  width: max-content;
+  font-size: 30px;
+  -webkit-text-fill-color: white; /* Will override color (regardless of order) */
+  -webkit-text-stroke-width: 1.5px;
+  -webkit-text-stroke-color: #2b2a29;
+  top: -30px;
+  left: 50px;
+`;
+
+const YellowStar = styled.div`
+  padding: 0;
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  -webkit-text-fill-color: gold;
+`;
+
+const GrayStar = styled.div`
+  position: relative;
+  z-index: 0;
+  padding: 0;
+`;
+
+const RatingNumber = styled.span`
+  position: relative;
+  top: -60px;
+  left: 190px;
 `;
 
 const rowVariants = {
@@ -467,27 +503,37 @@ function Home() {
                         {clickedMovie.original_title})
                       </BigMovieTitle>
                       <BigMovieOverview>
-                        {clickedMovie.overview}
+                        {clickedMovie.overview
+                          ? clickedMovie.overview
+                          : "줄거리 없습니다. 직접 보면서 느끼세요!"}
                       </BigMovieOverview>
                       <Ratings>
+                        <Rate>평점 : </Rate>
                         <StarRateWrap>
-                          <span className="star_icon">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="40"
-                              height="39"
-                              viewBox="0 0 14 13"
-                            >
-                              <path
-                                id="star"
-                                d="M9,2l2.163,4.279L16,6.969,12.5,10.3l.826,4.7L9,12.779,4.674,15,5.5,10.3,2,6.969l4.837-.69Z"
-                                transform="translate(-2 -2)"
-                                fill="#cacaca"
-                              />
-                            </svg>
-                          </span>
+                          <YellowStar
+                            style={{
+                              width: `${ratingToPercent(
+                                clickedMovie.vote_average
+                              )}%`,
+                            }}
+                          >
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                          </YellowStar>
+                          <GrayStar>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                          </GrayStar>
                         </StarRateWrap>
-                        <span>{clickedMovie.vote_average}</span>
+                        <RatingNumber>
+                          {clickedMovie.vote_average / 2} / 5
+                        </RatingNumber>
                       </Ratings>
                     </>
                   )}
