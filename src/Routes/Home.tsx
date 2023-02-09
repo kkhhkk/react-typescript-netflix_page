@@ -61,15 +61,6 @@ const Slider = styled.div`
   margin-top: 350px;
 `;
 
-const LastSlider = styled.div`
-  position: relative;
-  top: -450px;
-  margin: 0px 40px -63px 40px;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 350px;
-`;
-
 const ArrowButton = styled(motion.button)`
   position: relative;
   top: 120px;
@@ -194,9 +185,6 @@ const Rate = styled.span`
 
 const StarRateWrap = styled.div`
   position: relative;
-  color: white;
-  position: relative;
-  unicode-bidi: bidi-override;
   width: max-content;
   font-size: 30px;
   -webkit-text-fill-color: white; /* Will override color (regardless of order) */
@@ -207,10 +195,9 @@ const StarRateWrap = styled.div`
 `;
 
 const YellowStar = styled.div`
-  padding: 0;
   position: absolute;
+  padding: 0;
   z-index: 1;
-  display: flex;
   top: 0;
   left: 0;
   overflow: hidden;
@@ -219,8 +206,6 @@ const YellowStar = styled.div`
 
 const GrayStar = styled.div`
   position: relative;
-  z-index: 0;
-  padding: 0;
 `;
 
 const RatingNumber = styled.span`
@@ -517,18 +502,10 @@ function Home() {
                               )}%`,
                             }}
                           >
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
+                            <span>★★★★★</span>
                           </YellowStar>
                           <GrayStar>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
+                            <span>★★★★★</span>
                           </GrayStar>
                         </StarRateWrap>
                         <RatingNumber>
@@ -606,10 +583,44 @@ function Home() {
                           )`,
                         }}
                       ></BigMovieImage>
-                      <BigMovieTitle>{topClickedMovie.title}</BigMovieTitle>
+                      <BigMoviePoster
+                        style={{
+                          backgroundImage: `url(${makeImagePath(
+                            topClickedMovie.poster_path,
+                            "w500"
+                          )}
+                          )`,
+                        }}
+                      ></BigMoviePoster>
+                      <BigMovieTitle>
+                        <div>{topClickedMovie.title}</div>(
+                        {topClickedMovie.original_title})
+                      </BigMovieTitle>
                       <BigMovieOverview>
-                        {topClickedMovie.overview}
+                        {topClickedMovie.overview
+                          ? topClickedMovie.overview
+                          : "줄거리 없습니다. 직접 보면서 느끼세요!"}
                       </BigMovieOverview>
+                      <Ratings>
+                        <Rate>평점 : </Rate>
+                        <StarRateWrap>
+                          <YellowStar
+                            style={{
+                              width: `${ratingToPercent(
+                                topClickedMovie.vote_average
+                              )}%`,
+                            }}
+                          >
+                            <span>★★★★★</span>
+                          </YellowStar>
+                          <GrayStar>
+                            <span>★★★★★</span>
+                          </GrayStar>
+                        </StarRateWrap>
+                        <RatingNumber>
+                          {topClickedMovie.vote_average / 2} / 5
+                        </RatingNumber>
+                      </Ratings>
                     </>
                   )}
                 </BigMovie>
@@ -617,7 +628,7 @@ function Home() {
             ) : null}
           </AnimatePresence>
           <Category>인기 순</Category>
-          <LastSlider>
+          <Slider>
             <AnimatePresence
               initial={false}
               onExitComplete={toggleLeaving}
@@ -656,7 +667,7 @@ function Home() {
             <ArrowButton type="button" onClick={popularIncreaseIndex}>
               〉
             </ArrowButton>
-          </LastSlider>
+          </Slider>
           <AnimatePresence>
             {popularBigMovieMatch ? (
               <>
@@ -681,10 +692,44 @@ function Home() {
                           )`,
                         }}
                       ></BigMovieImage>
-                      <BigMovieTitle>{popularClickedMovie.title}</BigMovieTitle>
+                      <BigMoviePoster
+                        style={{
+                          backgroundImage: `url(${makeImagePath(
+                            popularClickedMovie.poster_path,
+                            "w500"
+                          )}
+                          )`,
+                        }}
+                      ></BigMoviePoster>
+                      <BigMovieTitle>
+                        <div>{popularClickedMovie.title}</div>(
+                        {popularClickedMovie.original_title})
+                      </BigMovieTitle>
                       <BigMovieOverview>
-                        {popularClickedMovie.overview}
+                        {popularClickedMovie.overview
+                          ? popularClickedMovie.overview
+                          : "줄거리 없습니다. 직접 보면서 느끼세요!"}
                       </BigMovieOverview>
+                      <Ratings>
+                        <Rate>평점 : </Rate>
+                        <StarRateWrap>
+                          <YellowStar
+                            style={{
+                              width: `${ratingToPercent(
+                                popularClickedMovie.vote_average
+                              )}%`,
+                            }}
+                          >
+                            <span>★★★★★</span>
+                          </YellowStar>
+                          <GrayStar>
+                            <span>★★★★★</span>
+                          </GrayStar>
+                        </StarRateWrap>
+                        <RatingNumber>
+                          {popularClickedMovie.vote_average / 2} / 5
+                        </RatingNumber>
+                      </Ratings>
                     </>
                   )}
                 </BigMovie>

@@ -19,6 +19,22 @@ export interface IGetMovieResult {
   results: IMovie[];
 }
 
+interface ITv {
+  backdrop_path: string;
+  id: number;
+  name: string;
+  original_name: string;
+  overview: string;
+  poster_path: string;
+  vote_average: number;
+}
+
+export interface IGetTVResult {
+  results: ITv[];
+  total_pages: number;
+  total_results: number;
+}
+
 export async function getMovies() {
   const response = await fetch(
     `${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=ko-KR`
@@ -36,6 +52,13 @@ export async function getMoviesTopRates() {
 export async function getMoviesPopular() {
   const response = await fetch(
     `${BASE_PATH}/movie/popular?api_key=${API_KEY}&language=ko-KR`
+  );
+  return await response.json();
+}
+
+export async function getTvOnAir() {
+  const response = await fetch(
+    `${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=ko-KR`
   );
   return await response.json();
 }
