@@ -62,3 +62,17 @@ export async function getTvOnAir() {
   );
   return await response.json();
 }
+
+export async function getTvTopRates() {
+  const response = await fetch(
+    `${BASE_PATH}/tv/top_rated?api_key=${API_KEY}&language=ko-KR`
+  );
+  return await response.json();
+}
+
+export async function getTvPopular() {
+  const response = await fetch(
+    `${BASE_PATH}/tv/popular?api_key=${API_KEY}&language=ko-KR`
+  );
+  return await response.json();
+}
