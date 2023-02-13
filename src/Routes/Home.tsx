@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useQuery } from "react-query";
 import { useMatch, PathMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -401,6 +402,9 @@ function Home() {
     );
   return (
     <Wrapper>
+      <Helmet>
+        <title>넷플릭스 - Movie</title>
+      </Helmet>
       {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (

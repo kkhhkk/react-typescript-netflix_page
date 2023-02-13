@@ -1,4 +1,5 @@
 import { useQuery } from "react-query";
+import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { IGetMovieResult, IGetTVResult } from "../api";
@@ -115,6 +116,9 @@ function Search() {
   });
   return (
     <Wrapper>
+      <Helmet>
+        <title>넷플릭스 - {searchParam ? searchParam : "Search"}</title>
+      </Helmet>
       {searchParam === null ||
       Number(movies?.results.length) + Number(tv?.results.length) === 0 ? (
         <SearchResult>
@@ -129,9 +133,21 @@ function Search() {
               <Catergory>영화</Catergory>
               <SearchUl>
                 {movies?.results.map((movie) => (
-                  <List>
+                  <List key={movie.id}>
                     <ListImage
-                      $bgPhoto={makeImagePath(movie.poster_path, "w500")}
+                      style={
+                        movie.poster_path
+                          ? { width: 250, height: 250 }
+                          : {
+                              backgroundSize: "170px 250px",
+                            }
+                      }
+                      $bgPhoto={makeImagePath(
+                        movie.poster_path
+                          ? movie.poster_path
+                          : movie.backdrop_path,
+                        "w500"
+                      )}
                     />
                     <ListRight>
                       <ListTitle>
@@ -151,16 +167,31 @@ function Search() {
           )}
           {tv?.results.length === 0 ? null : (
             <>
-              <Catergory>드라마</Catergory>
+              <Catergory>TV프로그램</Catergory>
               <SearchUl>
                 {tv?.results.map((tv) => (
-                  <List>
+                  <List key={tv.id}>
                     <ListImage
-                      $bgPhoto={makeImagePath(tv.poster_path, "w500")}
+                      style={
+                        tv.poster_path
+                          ? { width: 250, height: 250 }
+                          : {
+                              backgroundSize: "170px 250px",
+                            }
+                      }
+                      $bgPhoto={makeImagePath(
+                        tv.poster_path ? tv.poster_path : tv.backdrop_path,
+                        "w500"
+                      )}
                     />
                     <ListRight>
                       <ListTitle>
-                        {tv.name} <div>({tv.original_name})</div>
+                        {tv.name}{" "}
+                        <div>
+                          {tv.name === tv.original_name
+                            ? ""
+                            : "(" + tv.original_name + ")"}
+                        </div>
                       </ListTitle>
                       <ListOverView>{tv.overview}</ListOverView>
                     </ListRight>
